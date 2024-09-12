@@ -19,14 +19,16 @@ app.get("/api/Script", async (req, res) => {
 
 		const loginResponse = await makePostRequest(baseurl, endpoint, loginRequest);
 		const accessToken = loginResponse.access_token;
-
+		console.log("Sucessfully login for user: ", username);
 		baseurl = "https://prod-shiftattendance-api.huhoka.com";
 		endpoint = "/api/Shift/CheckInShift";
 
 		const checkinModel = { customTime: new Date().toISOString() };
 		await makePostRequest(baseurl, endpoint, checkinModel, accessToken);
+		console.log("Sucessfully Checkin for user: ", username);
 
 		const employee = await getEmployeeByToken(accessToken);
+		console.log("Sucessfully get employee: ", username);
 
 		baseurl = "https://prod-shiftattendance-api.huhoka.com";
 		endpoint = "/api/TimeSheet/GetTimeSheetsByEmployeeUId";
@@ -37,6 +39,8 @@ app.get("/api/Script", async (req, res) => {
 		};
 
 		const timesheetResponse = await makePostRequest(baseurl, endpoint, getTimesheetModel, accessToken);
+		console.log("Sucessfully fetch timesheet for user: ", username);
+
 		const timesheetModelList = timesheetResponse;
 		console.log(timesheetModelList[0]);
 		const timesheetModel = timesheetModelList[0];
@@ -139,6 +143,7 @@ app.get("/api/Script", async (req, res) => {
 		}
 		endpoint = "/api/TimeSheet/UpdateTimeSheet";
 		await makePostRequest(baseurl, endpoint, timesheetModel, accessToken);
+		console.log("Sucessfully pdated timesheet for user: ", username);
 
 		res.send(`
 			<html>
@@ -165,7 +170,6 @@ const makePostRequest = async (baseUrl, endpoint, apiRequestData, token = "", or
 		if (orgUId) headers["OrganizationUId"] = orgUId;
 
 		const response = await axios.post(`${baseUrl}${endpoint}`, apiRequestData, { headers });
-		console.log(response.data);
 		return response.data;
 	} catch (error) {
 		console.error(`Error making POST request to ${baseUrl}${endpoint}:`, error.message);
